@@ -1,0 +1,6 @@
+{
+  "name": "Remotion Architect Studio",
+  "description": "Arsitek video programmer dan generator kode React Remotion programatik dengan live player preview, Zod schema, timeline inspector, dan ekspor kode modular.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
