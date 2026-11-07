@@ -7,11 +7,17 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
-import type { VideoFormat, VisualElementsConfig, VideoScene, SceneTransition } from '../../types/remotion';
+import type { VideoFormat, VisualElementsConfig, VideoScene, SceneTransition, GalleryImageItem } from '../../types/remotion';
 
 export interface LiveCompositionProps extends VisualElementsConfig {
   format: VideoFormat;
   scenes?: VideoScene[];
+  trackVisibility?: {
+    video?: boolean;
+    text?: boolean;
+    graphics?: boolean;
+    audio?: boolean;
+  };
 }
 
 export const LiveRemotionComposition: React.FC<LiveCompositionProps> = ({
@@ -28,6 +34,7 @@ export const LiveRemotionComposition: React.FC<LiveCompositionProps> = ({
   ctaText,
   brandName,
   scenes,
+  trackVisibility,
 }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
@@ -226,6 +233,8 @@ export const LiveRemotionComposition: React.FC<LiveCompositionProps> = ({
               globalMetricNumber={metricNumber}
               globalMetricLabel={metricLabel}
               globalCtaText={ctaText}
+              hideAllText={trackVisibility?.text === false}
+              hideAllBadges={trackVisibility?.graphics === false}
             />
           </Sequence>
         );
@@ -249,6 +258,8 @@ interface SceneRendererProps {
   globalMetricNumber: string;
   globalMetricLabel: string;
   globalCtaText: string;
+  hideAllText?: boolean;
+  hideAllBadges?: boolean;
 }
 
 const SceneRenderer: React.FC<SceneRendererProps> = ({
@@ -265,6 +276,8 @@ const SceneRenderer: React.FC<SceneRendererProps> = ({
   globalMetricNumber,
   globalMetricLabel,
   globalCtaText,
+  hideAllText,
+  hideAllBadges,
 }) => {
   const frame = useCurrentFrame();
   const transitionFrames = transition?.durationInFrames || 15;
@@ -348,6 +361,8 @@ const SceneRenderer: React.FC<SceneRendererProps> = ({
         globalMetricNumber,
         globalMetricLabel,
         globalCtaText,
+        hideAllText,
+        hideAllBadges,
       })}
     </AbsoluteFill>
   );
@@ -366,16 +381,26 @@ function renderSceneTemplate(props: {
   globalMetricNumber: string;
   globalMetricLabel: string;
   globalCtaText: string;
+  hideAllText?: boolean;
+  hideAllBadges?: boolean;
 }) {
-  const { scene, isVertical, accentColor, secondaryColor } = props;
+  const { scene, isVertical, accentColor, secondaryColor, hideAllText, hideAllBadges } = props;
+
+  const isTextHidden = !!scene.hideText || !!hideAllText;
+  const isBadgeHidden = !!scene.hideBadge || !!hideAllBadges;
+
+  const effTitle = isTextHidden ? '' : (scene.title || props.globalHeadline);
+  const effSubtitle = isTextHidden ? '' : (scene.subtitle || props.globalSubheadline);
+  const effBadgeText = isBadgeHidden ? '' : (scene.badgeText || '');
+  const effItems = isTextHidden ? [] : (scene.items || props.globalFeatures);
 
   switch (scene.templateType) {
     case 'cyber-glitch':
       return (
         <SceneCyberGlitch
-          badgeText={scene.badgeText || 'ALERT #01'}
-          headline={scene.title || props.globalHeadline}
-          subheadline={scene.subtitle || props.globalSubheadline}
+          badgeText={effBadgeText || (isBadgeHidden ? '' : 'ALERT #01')}
+          headline={effTitle}
+          subheadline={effSubtitle}
           accentColor={accentColor}
           isVertical={isVertical}
         />
@@ -384,22 +409,36 @@ function renderSceneTemplate(props: {
     case 'feature-grid':
       return (
         <SceneFeatureGrid
-          title={scene.title || 'Fitur Unggulan Programatik'}
-          badgeText={scene.badgeText || 'FITUR UNGGULAN'}
-          items={scene.items || props.globalFeatures}
+          title={effTitle || (isTextHidden ? '' : 'Fitur Unggulan Programatik')}
+          badgeText={effBadgeText || (isBadgeHidden ? '' : 'FITUR UNGGULAN')}
+          items={effItems}
           accentColor={accentColor}
           secondaryColor={secondaryColor}
           isVertical={isVertical}
         />
       );
 
+    case 'image-gallery':
+      return (
+        <SceneImageGallery
+          title={effTitle || (isTextHidden ? '' : 'Koleksi Visual Eksklusif 2026')}
+          subtitle={effSubtitle || (isTextHidden ? '' : 'Tampilan multi-aset interaktif dengan animasi perpindahan mulus')}
+          badgeText={effBadgeText || (isBadgeHidden ? '' : 'GALERI VISUAL')}
+          images={scene.galleryImages}
+          accentColor={accentColor}
+          secondaryColor={secondaryColor}
+          isVertical={isVertical}
+          layoutVariant={scene.layoutVariant || 'carousel'}
+        />
+      );
+
     case 'product-showcase':
       return (
         <SceneProductShowcase
-          title={scene.title || 'Workstation Remotion Pro'}
-          subtitle={scene.subtitle || 'Integrasi penuh kode React & CapCut UX'}
-          badgeText={scene.badgeText || 'PRODUK TERBARU'}
-          items={scene.items || props.globalFeatures}
+          title={effTitle || (isTextHidden ? '' : 'Workstation Remotion Pro')}
+          subtitle={effSubtitle || (isTextHidden ? '' : 'Integrasi penuh kode React & CapCut UX')}
+          badgeText={effBadgeText || (isBadgeHidden ? '' : 'PRODUK TERBARU')}
+          items={effItems}
           accentColor={accentColor}
           isVertical={isVertical}
         />
@@ -408,10 +447,10 @@ function renderSceneTemplate(props: {
     case 'metric-impact':
       return (
         <SceneMetricImpact
-          metricNumber={scene.metricNumber || props.globalMetricNumber}
-          metricLabel={scene.metricLabel || props.globalMetricLabel}
-          badgeText={scene.badgeText || 'BUKTI & METRIK'}
-          subtitle={scene.subtitle || 'Diverifikasi langsung oleh ribuan pipeline produksi'}
+          metricNumber={isTextHidden ? '' : (scene.metricNumber || props.globalMetricNumber)}
+          metricLabel={isTextHidden ? '' : (scene.metricLabel || props.globalMetricLabel)}
+          badgeText={effBadgeText || (isBadgeHidden ? '' : 'BUKTI & METRIK')}
+          subtitle={effSubtitle || (isTextHidden ? '' : 'Diverifikasi langsung oleh ribuan pipeline produksi')}
           accentColor={accentColor}
           isVertical={isVertical}
         />
@@ -420,10 +459,10 @@ function renderSceneTemplate(props: {
     case 'split-comparison':
       return (
         <SceneSplitComparison
-          title={scene.title || 'Perbandingan Efisiensi Kerja'}
-          badgeText={scene.badgeText || 'PERBANDINGAN NYATA'}
-          beforeText={scene.beforeText || 'Cara Manual: Edit video potong per potong, makan waktu berjam-jam.'}
-          afterText={scene.afterText || 'Cara Remotion: Sekali klik kode React, otomatisasi ratusan video MP4!'}
+          title={effTitle || (isTextHidden ? '' : 'Perbandingan Efisiensi Kerja')}
+          badgeText={effBadgeText || (isBadgeHidden ? '' : 'PERBANDINGAN NYATA')}
+          beforeText={isTextHidden ? '' : (scene.beforeText || 'Cara Manual: Edit video potong per potong, makan waktu berjam-jam.')}
+          afterText={isTextHidden ? '' : (scene.afterText || 'Cara Remotion: Sekali klik kode React, otomatisasi ratusan video MP4!')}
           accentColor={accentColor}
           isVertical={isVertical}
         />
@@ -432,23 +471,38 @@ function renderSceneTemplate(props: {
     case 'quote-testimonial':
       return (
         <SceneQuoteTestimonial
-          title={scene.title || '"Remotion mengubah total alur kerja video studio kami."'}
-          subtitle={scene.subtitle || 'Kualitas render pixel-perfect dan otomatisasi tanpa batas.'}
-          badgeText={scene.badgeText || 'TESTIMONI KLIEN'}
-          author={scene.author || 'Budi Santoso'}
-          authorRole={scene.authorRole || 'Lead Video Engineer'}
+          title={effTitle || (isTextHidden ? '' : '"Remotion mengubah total alur kerja video studio kami."')}
+          subtitle={effSubtitle || (isTextHidden ? '' : 'Kualitas render pixel-perfect dan otomatisasi tanpa batas.')}
+          badgeText={effBadgeText || (isBadgeHidden ? '' : 'TESTIMONI KLIEN')}
+          author={isTextHidden ? '' : (scene.author || 'Budi Santoso')}
+          authorRole={isTextHidden ? '' : (scene.authorRole || 'Lead Video Engineer')}
           accentColor={accentColor}
           isVertical={isVertical}
+        />
+      );
+
+    case 'diary-paper':
+      return (
+        <SceneDiaryPaper
+          title={effTitle}
+          subtitle={effSubtitle}
+          badgeText={effBadgeText || (isBadgeHidden ? '' : 'DIARY MOTION')}
+          author={scene.author || 'Aa Baim'}
+          authorRole={scene.authorRole || '— Diary Motion Studio ✨'}
+          accentColor={accentColor}
+          isVertical={isVertical}
+          isTextHidden={isTextHidden}
+          isBadgeHidden={isBadgeHidden}
         />
       );
 
     case 'outro-cta':
       return (
         <SceneOutroCta
-          brandName={scene.brandName || props.globalBrandName}
-          ctaText={scene.ctaText || props.globalCtaText}
-          title={scene.title || 'Mulai Rancang Video Remotion Sekarang'}
-          subtitle={scene.subtitle || 'Buka Remotion Studio atau salin kode TypeScript langsung'}
+          brandName={isTextHidden ? '' : (scene.brandName || props.globalBrandName)}
+          ctaText={isTextHidden ? '' : (scene.ctaText || props.globalCtaText)}
+          title={effTitle || (isTextHidden ? '' : 'Mulai Rancang Video Remotion Sekarang')}
+          subtitle={effSubtitle || (isTextHidden ? '' : 'Buka Remotion Studio atau salin kode TypeScript langsung')}
           accentColor={accentColor}
           secondaryColor={secondaryColor}
           isVertical={isVertical}
@@ -459,15 +513,161 @@ function renderSceneTemplate(props: {
     default:
       return (
         <SceneHookTitle
-          badgeText={scene.badgeText || 'FITUR TERBARU'}
-          headline={scene.title || props.globalHeadline}
-          subheadline={scene.subtitle || props.globalSubheadline}
+          badgeText={effBadgeText || (isBadgeHidden ? '' : 'FITUR TERBARU')}
+          headline={effTitle}
+          subheadline={effSubtitle}
           accentColor={accentColor}
           isVertical={isVertical}
         />
       );
   }
 }
+
+// ==========================================
+// SCENE: DIARY PAPER (Olip & Diary Parity)
+// ==========================================
+const SceneDiaryPaper: React.FC<{
+  title: string;
+  subtitle: string;
+  badgeText: string;
+  author: string;
+  authorRole: string;
+  accentColor: string;
+  isVertical: boolean;
+  isTextHidden?: boolean;
+  isBadgeHidden?: boolean;
+}> = ({
+  title,
+  subtitle,
+  badgeText,
+  author,
+  authorRole,
+  isVertical,
+  isTextHidden,
+  isBadgeHidden,
+}) => {
+  const frame = useCurrentFrame();
+  const { durationInFrames, fps } = useVideoConfig();
+
+  // Paper slide/drop animation with spring
+  const paperSpring = spring({
+    frame,
+    fps,
+    config: { damping: 14, stiffness: 100, mass: 0.8 },
+  });
+
+  const paperScale = interpolate(paperSpring, [0, 1], [0.92, 1]);
+  const paperOpacity = interpolate(paperSpring, [0, 1], [0, 1]);
+  const paperRotate = interpolate(paperSpring, [0, 1], [-2.5, -0.5]);
+
+  const lineH = isVertical ? 36 : 32;
+  const fullText = subtitle || title || 'Catatan diary harian...';
+
+  // Handwriting typewriter interpolation
+  const writeProgress = interpolate(
+    frame,
+    [10, Math.max(30, durationInFrames - 15)],
+    [0, fullText.length],
+    {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    }
+  );
+  const currentChars = Math.floor(writeProgress);
+  const displayText = fullText.slice(0, currentChars);
+
+  return (
+    <AbsoluteFill className="items-center justify-center p-4 sm:p-8 overflow-hidden select-none">
+      {/* Wooden Desk / Cozy Warm Ambient Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#1a1512] via-[#241c17] to-[#120f0d]" />
+
+      {/* Warm Ambient Radial Glow */}
+      <div
+        className="absolute w-[600px] h-[600px] rounded-full blur-[140px] opacity-25 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(circle, #f59e0b 0%, #d97706 50%, transparent 70%)',
+        }}
+      />
+
+      {/* Aesthetic Ruled Paper Canvas with Parity to Diary Studio */}
+      <div
+        style={{
+          transform: `scale(${paperScale}) rotate(${paperRotate}deg)`,
+          opacity: paperOpacity,
+          backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent ${lineH - 1}px, #bfd3ea ${lineH - 1}px, #bfd3ea ${lineH}px)`,
+          backgroundPosition: '0 40px',
+        }}
+        className={`relative bg-[#fcfbfa] text-[#1e293b] rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.7)] border border-[#e2dcd4] flex flex-col justify-between overflow-hidden transition-transform ${
+          isVertical
+            ? 'w-[90%] max-w-[420px] h-[85%] max-h-[720px] p-6'
+            : 'w-[85%] max-w-[720px] h-[80%] max-h-[480px] p-8'
+        }`}
+      >
+        {/* Red Margin Line on the Left */}
+        <div
+          style={{
+            position: 'absolute',
+            left: isVertical ? 48 : 64,
+            top: 0,
+            bottom: 0,
+            width: 2.5,
+            backgroundColor: '#f87171',
+            opacity: 0.85,
+          }}
+        />
+
+        {/* Paper Tape Accent at Top */}
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-28 h-6 bg-amber-200/60 backdrop-blur-sm border border-amber-300/40 rotate-1 shadow-xs rounded-sm" />
+
+        {/* Header: Date / Badge & Title */}
+        <div className="relative z-10 pl-10 sm:pl-14 pt-2">
+          {!isBadgeHidden && badgeText && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100/90 text-amber-900 border border-amber-300/80 text-[10px] font-bold tracking-wider uppercase mb-2 shadow-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
+              <span>{badgeText}</span>
+            </div>
+          )}
+
+          {!isTextHidden && title && (
+            <h2 className="text-sm sm:text-base font-extrabold text-[#0f172a] tracking-tight leading-tight">
+              {title}
+            </h2>
+          )}
+        </div>
+
+        {/* Body: Handwritten Ruled Content */}
+        <div className="relative z-10 pl-10 sm:pl-14 flex-1 py-4 flex flex-col justify-start">
+          <div
+            style={{
+              fontFamily: '"Caveat", "Dancing Script", "Comic Sans MS", cursive',
+              fontSize: isVertical ? '22px' : '26px',
+              lineHeight: `${lineH}px`,
+              color: '#1a368a', // Deep Blue Pen Ink (Olip & Diary Standard)
+            }}
+            className="whitespace-pre-wrap font-bold select-none tracking-wide"
+          >
+            {displayText}
+            {currentChars < fullText.length && (
+              <span className="inline-block w-1.5 h-5 bg-[#1a368a] ml-1 animate-pulse align-middle" />
+            )}
+          </div>
+        </div>
+
+        {/* Footer: Signature / Author Footer */}
+        <div className="relative z-10 pl-10 sm:pl-14 pt-2 border-t border-[#e2dcd4]/60 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <div className="flex items-center gap-1.5">
+            <span className="font-bold text-[#1e293b]">{author}</span>
+            <span className="text-slate-400">{authorRole}</span>
+          </div>
+          <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-600 font-semibold border border-slate-200">
+            Diary Remotion Parity
+          </span>
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+};
 
 // ==========================================
 // SCENE 1: HOOK & KINETIC HEADLINE
@@ -511,58 +711,64 @@ const SceneHookTitle: React.FC<{
         padding: isVertical ? '0 64px' : '0 140px',
       }}
     >
-      <div
-        style={{
-          transform: `scale(${badgeSpring}) translateY(${(1 - badgeSpring) * 35}px)`,
-          opacity: badgeSpring,
-          background: `${accentColor}22`,
-          border: `2px solid ${accentColor}99`,
-          color: accentColor,
-          padding: isVertical ? '14px 32px' : '10px 24px',
-          borderRadius: '9999px',
-          fontSize: isVertical ? '34px' : '22px',
-          fontWeight: 800,
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-          marginBottom: isVertical ? '48px' : '32px',
-          boxShadow: `0 0 35px ${accentColor}55`,
-        }}
-      >
-        ✦ {badgeText}
-      </div>
+      {badgeText ? (
+        <div
+          style={{
+            transform: `scale(${badgeSpring}) translateY(${(1 - badgeSpring) * 35}px)`,
+            opacity: badgeSpring,
+            background: `${accentColor}22`,
+            border: `2px solid ${accentColor}99`,
+            color: accentColor,
+            padding: isVertical ? '14px 32px' : '10px 24px',
+            borderRadius: '9999px',
+            fontSize: isVertical ? '34px' : '22px',
+            fontWeight: 800,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            marginBottom: isVertical ? '48px' : '32px',
+            boxShadow: `0 0 35px ${accentColor}55`,
+          }}
+        >
+          ✦ {badgeText}
+        </div>
+      ) : null}
 
-      <h1
-        style={{
-          transform: `translateY(${(1 - titleSpring) * 60}px)`,
-          opacity: titleSpring,
-          fontSize: isVertical ? '76px' : '64px',
-          lineHeight: isVertical ? 1.18 : 1.12,
-          fontWeight: 900,
-          letterSpacing: '-0.035em',
-          maxWidth: isVertical ? '100%' : '1200px',
-          marginBottom: isVertical ? '36px' : '28px',
-          background: 'linear-gradient(180deg, #FFFFFF 25%, rgba(255, 255, 255, 0.72) 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          textShadow: '0 8px 30px rgba(0,0,0,0.6)',
-        }}
-      >
-        {headline}
-      </h1>
+      {headline ? (
+        <h1
+          style={{
+            transform: `translateY(${(1 - titleSpring) * 60}px)`,
+            opacity: titleSpring,
+            fontSize: isVertical ? '76px' : '64px',
+            lineHeight: isVertical ? 1.18 : 1.12,
+            fontWeight: 900,
+            letterSpacing: '-0.035em',
+            maxWidth: isVertical ? '100%' : '1200px',
+            marginBottom: isVertical ? '36px' : '28px',
+            background: 'linear-gradient(180deg, #FFFFFF 25%, rgba(255, 255, 255, 0.72) 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            textShadow: '0 8px 30px rgba(0,0,0,0.6)',
+          }}
+        >
+          {headline}
+        </h1>
+      ) : null}
 
-      <p
-        style={{
-          transform: `translateY(${(1 - subSpring) * 40}px)`,
-          opacity: subSpring,
-          fontSize: isVertical ? '36px' : '28px',
-          color: 'rgba(255, 255, 255, 0.75)',
-          maxWidth: isVertical ? '100%' : '900px',
-          lineHeight: 1.45,
-          fontWeight: 450,
-        }}
-      >
-        {subheadline}
-      </p>
+      {subheadline ? (
+        <p
+          style={{
+            transform: `translateY(${(1 - subSpring) * 40}px)`,
+            opacity: subSpring,
+            fontSize: isVertical ? '36px' : '28px',
+            color: 'rgba(255, 255, 255, 0.75)',
+            maxWidth: isVertical ? '100%' : '900px',
+            lineHeight: 1.45,
+            fontWeight: 450,
+          }}
+        >
+          {subheadline}
+        </p>
+      ) : null}
     </AbsoluteFill>
   );
 };
@@ -643,6 +849,297 @@ const SceneCyberGlitch: React.FC<{
       >
         {subheadline}
       </p>
+    </AbsoluteFill>
+  );
+};
+
+// ==========================================
+// SCENE: IMAGE GALLERY & MEDIA CAROUSEL (V1 VISUAL POWER ENGINE)
+// ==========================================
+const DEFAULT_GALLERY_IMAGES: GalleryImageItem[] = [
+  {
+    id: 'g-1',
+    url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+    title: 'Fluid 3D Hologram',
+    subtitle: 'Kinetic Motion Design',
+    tag: 'CREATIVE',
+  },
+  {
+    id: 'g-2',
+    url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80',
+    title: 'Cyber Station Rig',
+    subtitle: 'Next-Gen Performance',
+    tag: 'TECH',
+  },
+  {
+    id: 'g-3',
+    url: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=800&q=80',
+    title: 'Prism Spectrum',
+    subtitle: 'Vibrant Dynamic Light',
+    tag: 'STUDIO',
+  },
+  {
+    id: 'g-4',
+    url: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80',
+    title: 'TypeScript Remotion',
+    subtitle: 'Programmatic Video AI',
+    tag: 'DEV',
+  },
+];
+
+const SceneImageGallery: React.FC<{
+  title: string;
+  subtitle: string;
+  badgeText: string;
+  images?: GalleryImageItem[];
+  accentColor: string;
+  secondaryColor: string;
+  isVertical: boolean;
+  layoutVariant?: 'carousel' | 'stack' | 'polaroid';
+}> = ({
+  title,
+  subtitle,
+  badgeText,
+  images,
+  accentColor,
+  secondaryColor,
+  isVertical,
+}) => {
+  const frame = useCurrentFrame();
+  const { fps, durationInFrames } = useVideoConfig();
+
+  const galleryItems = images && images.length > 0 ? images : DEFAULT_GALLERY_IMAGES;
+
+  const headerSpring = spring({
+    frame,
+    fps,
+    config: { damping: 13, stiffness: 120 },
+  });
+
+  return (
+    <AbsoluteFill
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: isVertical ? '0 54px' : '0 100px',
+        perspective: '1200px',
+      }}
+    >
+      {/* Top Header & Badge (if not hidden by overlay toggle) */}
+      {(badgeText || title) && (
+        <div
+          style={{
+            transform: `translateY(${(1 - headerSpring) * 30}px)`,
+            opacity: headerSpring,
+            textAlign: 'center',
+            marginBottom: isVertical ? '36px' : '32px',
+            zIndex: 20,
+          }}
+        >
+          {badgeText && (
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: isVertical ? '8px 20px' : '6px 16px',
+                borderRadius: '9999px',
+                background: `${accentColor}25`,
+                border: `1.5px solid ${accentColor}88`,
+                color: accentColor,
+                fontSize: isVertical ? '22px' : '14px',
+                fontWeight: 800,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                marginBottom: isVertical ? '14px' : '10px',
+              }}
+            >
+              <span>✦</span>
+              <span>{badgeText}</span>
+            </div>
+          )}
+
+          {title && (
+            <h2
+              style={{
+                fontSize: isVertical ? '54px' : '44px',
+                fontWeight: 900,
+                letterSpacing: '-0.025em',
+                lineHeight: 1.15,
+                color: '#ffffff',
+                textShadow: '0 4px 20px rgba(0,0,0,0.7)',
+                maxWidth: isVertical ? '100%' : '900px',
+              }}
+            >
+              {title}
+            </h2>
+          )}
+
+          {subtitle && (
+            <p
+              style={{
+                fontSize: isVertical ? '28px' : '20px',
+                color: 'rgba(255, 255, 255, 0.72)',
+                marginTop: '8px',
+                fontWeight: 450,
+              }}
+            >
+              {subtitle}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* V1 Visual Engine: Interactive Media Cards Spread */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: isVertical
+            ? 'repeat(2, minmax(0, 1fr))'
+            : `repeat(${Math.min(4, galleryItems.length)}, minmax(0, 1fr))`,
+          gap: isVertical ? '24px' : '24px',
+          width: '100%',
+          maxWidth: isVertical ? '960px' : '1500px',
+          zIndex: 10,
+        }}
+      >
+        {galleryItems.slice(0, 4).map((item, index) => {
+          const delay = index * 5;
+          const cardSpring = spring({
+            frame: frame - delay,
+            fps,
+            config: { damping: 12, stiffness: 100, mass: 0.8 },
+          });
+
+          // Floating bobbing motion
+          const floatOffset = Math.sin((frame + index * 18) / 16) * 6;
+
+          // 3D perspective tilt
+          const tiltY = isVertical ? 0 : (index - 1.5) * 4;
+
+          // Scale zoom subtle effect
+          const imgZoom = interpolate(frame, [0, durationInFrames], [1, 1.08], {
+            extrapolateRight: 'clamp',
+          });
+
+          return (
+            <div
+              key={item.id || index}
+              style={{
+                transform: `scale(${cardSpring}) translateY(${(1 - cardSpring) * 60 + floatOffset}px) rotateY(${tiltY}deg)`,
+                opacity: cardSpring,
+                borderRadius: isVertical ? '22px' : '20px',
+                overflow: 'hidden',
+                background: 'rgba(20, 24, 34, 0.75)',
+                border: `1.5px solid ${index === 1 ? accentColor : 'rgba(255, 255, 255, 0.16)'}`,
+                boxShadow:
+                  index === 1
+                    ? `0 20px 40px ${accentColor}40, 0 0 25px ${accentColor}25`
+                    : '0 16px 36px rgba(0,0,0,0.5)',
+                backdropFilter: 'blur(16px)',
+                display: 'flex',
+                flexDirection: 'column',
+                transition: 'border 0.3s ease',
+              }}
+            >
+              {/* Image Frame */}
+              <div
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  height: isVertical ? '240px' : '220px',
+                  overflow: 'hidden',
+                }}
+              >
+                <img
+                  src={item.url}
+                  alt={item.title}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transform: `scale(${imgZoom})`,
+                  }}
+                  crossOrigin="anonymous"
+                />
+
+                {/* Dark gradient fade over image */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background:
+                      'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(15, 17, 24, 0.9) 100%)',
+                  }}
+                />
+
+                {/* Tag Chip */}
+                {item.tag && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '12px',
+                      left: '12px',
+                      padding: '4px 10px',
+                      borderRadius: '8px',
+                      background: 'rgba(0,0,0,0.7)',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      backdropFilter: 'blur(6px)',
+                      fontSize: isVertical ? '14px' : '11px',
+                      fontWeight: 800,
+                      color: accentColor,
+                      letterSpacing: '0.06em',
+                    }}
+                  >
+                    {item.tag}
+                  </div>
+                )}
+              </div>
+
+              {/* Caption Area */}
+              <div
+                style={{
+                  padding: isVertical ? '18px 20px' : '16px 18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                }}
+              >
+                <h3
+                  style={{
+                    fontSize: isVertical ? '24px' : '18px',
+                    fontWeight: 800,
+                    color: '#ffffff',
+                    letterSpacing: '-0.01em',
+                    margin: 0,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {item.title}
+                </h3>
+                {item.subtitle && (
+                  <p
+                    style={{
+                      fontSize: isVertical ? '18px' : '13px',
+                      color: 'rgba(255, 255, 255, 0.65)',
+                      margin: 0,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {item.subtitle}
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </AbsoluteFill>
   );
 };

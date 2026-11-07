@@ -3,7 +3,7 @@ import type { SceneTemplateType, TransitionType, VideoScene, SceneTransition } f
 export interface SceneTemplateMeta {
   type: SceneTemplateType;
   title: string;
-  category: 'Intro' | 'Fitur' | 'Data' | 'Komparasi' | 'Outro';
+  category: 'Intro' | 'Galeri' | 'Fitur' | 'Data' | 'Komparasi' | 'Outro';
   description: string;
   badge: string;
   defaultDurationInFrames: number;
@@ -126,6 +126,53 @@ export const SCENE_TEMPLATES_CATALOG: SceneTemplateMeta[] = [
     },
   },
   {
+    type: 'image-gallery',
+    title: 'Galeri Gambar & Media Carousel',
+    category: 'Galeri',
+    description: 'Koleksi kartu media visual beranimasi spring dinamis dengan rotasi perspektif 3D, depth of field, dan tag caption.',
+    badge: 'Media Visual',
+    defaultDurationInFrames: 120,
+    iconName: 'Image',
+    color: '#8b5cf6',
+    previewGradient: 'from-purple-600/30 to-pink-600/20',
+    defaultContent: {
+      title: 'Koleksi Visual Eksklusif 2026',
+      subtitle: 'Tampilan multi-aset interaktif dengan animasi perpindahan mulus',
+      badgeText: 'GALERI FOTO',
+      layoutVariant: 'carousel',
+      galleryImages: [
+        {
+          id: 'img-1',
+          url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+          title: 'Fluid Hologram 3D',
+          subtitle: 'Grafis Kinetik Generatif',
+          tag: 'DESIGN',
+        },
+        {
+          id: 'img-2',
+          url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80',
+          title: 'Cyber Hardware Rig',
+          subtitle: 'Performa Render Ekstrim',
+          tag: 'TECH',
+        },
+        {
+          id: 'img-3',
+          url: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=800&q=80',
+          title: 'Prism Light Spectrum',
+          subtitle: 'Gradasi Warna Modern',
+          tag: 'STYLE',
+        },
+        {
+          id: 'img-4',
+          url: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80',
+          title: 'React Code Architecture',
+          subtitle: 'Komposisi Programatik',
+          tag: 'CODE',
+        },
+      ],
+    },
+  },
+  {
     type: 'feature-grid',
     title: '3-Card Feature Grid',
     category: 'Fitur',
@@ -213,6 +260,25 @@ export const SCENE_TEMPLATES_CATALOG: SceneTemplateMeta[] = [
       badgeText: 'TESTIMONI KLIEN',
       author: 'Budi Santoso',
       authorRole: 'Head of Growth Marketing',
+    },
+  },
+  {
+    type: 'diary-paper',
+    title: 'Catatan Diary Kertas (Olip/Diary Engine)',
+    category: 'Fitur',
+    description: 'Animasi kertas buku bergaris dengan garis batas merah, tulisan tangan estetik, dan sinergi dengan Diary Cloud Run render engine.',
+    badge: 'Diary & Olip',
+    defaultDurationInFrames: 120,
+    iconName: 'BookOpen',
+    color: '#eab308',
+    previewGradient: 'from-amber-700/30 via-yellow-600/20 to-orange-800/20',
+    defaultContent: {
+      title: '🌿 Catatan Pengingat Diri',
+      subtitle: 'Satu langkah kecil setiap hari lebih baik daripada menunggu sempurna. Terus berkarya ya!',
+      badgeText: 'DIARY MOTION',
+      author: 'Aa Baim',
+      authorRole: '— Diary Motion Studio ✨',
+      accentColor: '#1a368a',
     },
   },
   {

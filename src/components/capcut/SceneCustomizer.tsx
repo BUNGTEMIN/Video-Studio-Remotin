@@ -14,8 +14,10 @@ import {
   Palette,
   Clock,
   Flame,
+  Split,
+  Image as ImageIcon,
 } from 'lucide-react';
-import type { VideoScene, SceneTemplateType } from '../../types/remotion';
+import type { VideoScene, SceneTemplateType, GalleryImageItem } from '../../types/remotion';
 import { SCENE_TEMPLATES_CATALOG } from '../../data/sceneTemplates';
 
 interface SceneCustomizerProps {
@@ -23,6 +25,7 @@ interface SceneCustomizerProps {
   onUpdateScene: (updatedScene: VideoScene) => void;
   sceneIndex?: number;
   totalScenes?: number;
+  onOpenTransitionsGallery?: () => void;
 }
 
 export const SceneCustomizer: React.FC<SceneCustomizerProps> = ({
@@ -30,6 +33,7 @@ export const SceneCustomizer: React.FC<SceneCustomizerProps> = ({
   onUpdateScene,
   sceneIndex,
   totalScenes,
+  onOpenTransitionsGallery,
 }) => {
   const updateField = <K extends keyof VideoScene>(field: K, value: VideoScene[K]) => {
     onUpdateScene({
@@ -224,6 +228,48 @@ export const SceneCustomizer: React.FC<SceneCustomizerProps> = ({
         </div>
       )}
 
+      {/* A2. Image Gallery Fields */}
+      {scene.templateType === 'image-gallery' && (
+        <div className="p-3.5 rounded-xl bg-[#13151e] border border-[#262939] space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="text-[11px] font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5 text-purple-400">
+              <ImageIcon className="w-3.5 h-3.5" />
+              <span>Kartu Galeri Foto ({scene.galleryImages?.length || 4}/4)</span>
+            </h4>
+          </div>
+
+          <div className="space-y-2">
+            {(scene.galleryImages || [
+              { id: '1', title: 'Hologram 3D', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80', tag: 'DESIGN' },
+              { id: '2', title: 'Cyber Rig', url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80', tag: 'TECH' },
+              { id: '3', title: 'Prism Spectrum', url: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=800&q=80', tag: 'STYLE' },
+            ]).map((img, idx) => (
+              <div key={img.id || idx} className="p-2 rounded-lg bg-[#181a24] border border-[#272b3b] space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-purple-400">Foto #{idx + 1}</span>
+                  <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-purple-950 text-purple-300">
+                    {img.tag || 'MEDIA'}
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  value={img.title}
+                  onChange={(e) => {
+                    const current = [...(scene.galleryImages || [])];
+                    if (current[idx]) {
+                      current[idx] = { ...current[idx], title: e.target.value };
+                      updateField('galleryImages', current);
+                    }
+                  }}
+                  placeholder="Judul Foto..."
+                  className="w-full bg-[#11131c] border border-[#232636] rounded px-2 py-1 text-xs text-white"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* B. Metric Impact Fields */}
       {scene.templateType === 'metric-impact' && (
         <div className="p-3.5 rounded-xl bg-[#13151e] border border-[#262939] space-y-3">
@@ -398,6 +444,32 @@ export const SceneCustomizer: React.FC<SceneCustomizerProps> = ({
           <span>3.0s (90f)</span>
           <span>10.0s (300f)</span>
         </div>
+      </div>
+
+      {/* 5. Transisi Keluar Adegan */}
+      <div className="p-3.5 rounded-xl bg-[#13151e] border border-[#262939] space-y-2.5">
+        <div className="flex items-center justify-between text-slate-300">
+          <span className="font-semibold text-xs flex items-center gap-1.5">
+            <Split className="w-3.5 h-3.5 text-cyan-400" />
+            Transisi Keluar Adegan:
+          </span>
+          <span className="font-mono text-emerald-400 font-bold bg-[#181a24] px-2 py-0.5 rounded border border-emerald-800/40 text-[11px] uppercase">
+            {scene.transitionNext?.type || 'fade'} ({scene.transitionNext?.durationInFrames || 15}f)
+          </span>
+        </div>
+        <p className="text-[11px] text-slate-400">
+          Efek perpindahan saat adegan ini berganti ke adegan berikutnya di timeline.
+        </p>
+        {onOpenTransitionsGallery && (
+          <button
+            type="button"
+            onClick={onOpenTransitionsGallery}
+            className="w-full py-2 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500 hover:to-blue-500 text-cyan-300 hover:text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 border border-cyan-500/40 hover:border-transparent transition-all shadow-sm active:scale-95"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Pilih di Galeri Transisi (Fade, Slide, Zoom, Wipe)</span>
+          </button>
+        )}
       </div>
     </div>
   );

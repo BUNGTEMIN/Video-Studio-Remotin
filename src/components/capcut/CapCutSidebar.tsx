@@ -13,12 +13,14 @@ import {
   Layers,
   LayoutGrid,
   ExternalLink,
+  Split,
 } from 'lucide-react';
 import type { VideoBrief, VideoFormat, VideoScene } from '../../types/remotion';
 import { VIDEO_PRESETS } from '../../data/presets';
 import { SCENE_TEMPLATES_CATALOG, createSceneFromTemplate } from '../../data/sceneTemplates';
 import { secondsToFrames, sampleSpringCurve, getTotalFrames } from '../../utils/remotionMath';
 import { SceneCustomizer } from './SceneCustomizer';
+import { Tooltip } from '../common/Tooltip';
 
 interface CapCutSidebarProps {
   brief: VideoBrief;
@@ -29,6 +31,8 @@ interface CapCutSidebarProps {
   activeSceneId?: string;
   onSelectSceneId?: (id: string) => void;
   onUpdateScene?: (updatedScene: VideoScene) => void;
+  onOpenTransitionsGallery?: () => void;
+  onOpenTemplateEditor?: () => void;
 }
 
 type SidebarTab = 'template' | 'media' | 'text' | 'color' | 'elements' | 'animation';
@@ -42,6 +46,8 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
   activeSceneId,
   onSelectSceneId,
   onUpdateScene,
+  onOpenTransitionsGallery,
+  onOpenTemplateEditor,
 }) => {
   const [activeTab, setActiveTab] = useState<SidebarTab>('template');
   const [textSubTab, setTextSubTab] = useState<'scene' | 'global'>('scene');
@@ -91,92 +97,103 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
 
   return (
     <aside className="w-full h-full bg-[#16171d] flex flex-row overflow-hidden shrink-0 select-none">
-      {/* CapCut Left Slim Tool Rail */}
-      <div className="w-16 bg-[#111217] border-r border-[#21232b] flex flex-col items-center py-3 gap-2 shrink-0">
-        {/* Template Catalog Tab */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('template')}
-          className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center gap-1 transition-all ${
-            activeTab === 'template'
-              ? 'bg-[#232733] text-cyan-400 font-bold'
-              : 'text-slate-400 hover:text-white hover:bg-[#1a1c24]'
-          }`}
-          title="Template & Scene"
-        >
-          <LayoutGrid className="w-4 h-4" />
-          <span className="text-[9px]">Template</span>
-        </button>
+      {/* CapCut Left Slim Tool Rail (Icon-Only + Floating Tooltip) */}
+      <div className="w-12 bg-[#111217] border-r border-[#21232b] flex flex-col items-center py-3 gap-2 shrink-0">
+        <Tooltip content="Katalog Template Scene" position="right">
+          <button
+            type="button"
+            onClick={() => setActiveTab('template')}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+              activeTab === 'template'
+                ? 'bg-[#232733] text-cyan-400 shadow-sm border border-cyan-500/30'
+                : 'text-slate-400 hover:text-white hover:bg-[#1a1c24]'
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+        </Tooltip>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('media')}
-          className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center gap-1 transition-all ${
-            activeTab === 'media'
-              ? 'bg-[#232733] text-cyan-400 font-bold'
-              : 'text-slate-400 hover:text-white hover:bg-[#1a1c24]'
-          }`}
-          title="Media & Brief"
-        >
-          <FolderOpen className="w-4 h-4" />
-          <span className="text-[9px]">Media</span>
-        </button>
+        <Tooltip content="Media & Brief Video" position="right">
+          <button
+            type="button"
+            onClick={() => setActiveTab('media')}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+              activeTab === 'media'
+                ? 'bg-[#232733] text-cyan-400 shadow-sm border border-cyan-500/30'
+                : 'text-slate-400 hover:text-white hover:bg-[#1a1c24]'
+            }`}
+          >
+            <FolderOpen className="w-4 h-4" />
+          </button>
+        </Tooltip>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('text')}
-          className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center gap-1 transition-all ${
-            activeTab === 'text'
-              ? 'bg-[#232733] text-cyan-400 font-bold'
-              : 'text-slate-400 hover:text-white hover:bg-[#1a1c24]'
-          }`}
-          title="Teks & Tipografi"
-        >
-          <Type className="w-4 h-4" />
-          <span className="text-[9px]">Teks</span>
-        </button>
+        <Tooltip content="Teks & Tipografi" position="right">
+          <button
+            type="button"
+            onClick={() => setActiveTab('text')}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+              activeTab === 'text'
+                ? 'bg-[#232733] text-cyan-400 shadow-sm border border-cyan-500/30'
+                : 'text-slate-400 hover:text-white hover:bg-[#1a1c24]'
+            }`}
+          >
+            <Type className="w-4 h-4" />
+          </button>
+        </Tooltip>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('color')}
-          className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center gap-1 transition-all ${
-            activeTab === 'color'
-              ? 'bg-[#232733] text-cyan-400 font-bold'
-              : 'text-slate-400 hover:text-white hover:bg-[#1a1c24]'
-          }`}
-          title="Warna & Gaya"
-        >
-          <Palette className="w-4 h-4" />
-          <span className="text-[9px]">Warna</span>
-        </button>
+        <Tooltip content="Warna & Gaya Ambient" position="right">
+          <button
+            type="button"
+            onClick={() => setActiveTab('color')}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+              activeTab === 'color'
+                ? 'bg-[#232733] text-cyan-400 shadow-sm border border-cyan-500/30'
+                : 'text-slate-400 hover:text-white hover:bg-[#1a1c24]'
+            }`}
+          >
+            <Palette className="w-4 h-4" />
+          </button>
+        </Tooltip>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('elements')}
-          className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center gap-1 transition-all ${
-            activeTab === 'elements'
-              ? 'bg-[#232733] text-cyan-400 font-bold'
-              : 'text-slate-400 hover:text-white hover:bg-[#1a1c24]'
-          }`}
-          title="Elemen & Fitur"
-        >
-          <Sparkles className="w-4 h-4" />
-          <span className="text-[9px]">Elemen</span>
-        </button>
+        <Tooltip content="Elemen & Metrik" position="right">
+          <button
+            type="button"
+            onClick={() => setActiveTab('elements')}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+              activeTab === 'elements'
+                ? 'bg-[#232733] text-cyan-400 shadow-sm border border-cyan-500/30'
+                : 'text-slate-400 hover:text-white hover:bg-[#1a1c24]'
+            }`}
+          >
+            <Sparkles className="w-4 h-4" />
+          </button>
+        </Tooltip>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('animation')}
-          className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center gap-1 transition-all ${
-            activeTab === 'animation'
-              ? 'bg-[#232733] text-cyan-400 font-bold'
-              : 'text-slate-400 hover:text-white hover:bg-[#1a1c24]'
-          }`}
-          title="Animasi Spring Remotion"
-        >
-          <Zap className="w-4 h-4" />
-          <span className="text-[9px]">Animasi</span>
-        </button>
+        <Tooltip content="Animasi Spring Physics" position="right">
+          <button
+            type="button"
+            onClick={() => setActiveTab('animation')}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+              activeTab === 'animation'
+                ? 'bg-[#232733] text-cyan-400 shadow-sm border border-cyan-500/30'
+                : 'text-slate-400 hover:text-white hover:bg-[#1a1c24]'
+            }`}
+          >
+            <Zap className="w-4 h-4" />
+          </button>
+        </Tooltip>
+
+        {onOpenTransitionsGallery && (
+          <Tooltip content="Galeri Transisi Video" position="right">
+            <button
+              type="button"
+              onClick={onOpenTransitionsGallery}
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all text-cyan-400 hover:text-cyan-300 hover:bg-[#1a1c24]"
+            >
+              <Split className="w-4 h-4" />
+            </button>
+          </Tooltip>
+        )}
       </div>
 
       {/* Main Tab Panel Content */}
@@ -187,75 +204,103 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
             <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wide">
               Panel Pengaturan
             </span>
-            <button
-              type="button"
-              onClick={onPopOut}
-              className="text-slate-400 hover:text-cyan-400 flex items-center gap-1 text-[11px] px-2 py-0.5 rounded hover:bg-[#252838] transition-colors"
-              title="Buka sebagai Jendela Melayang / Modal"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>Undock Modal</span>
-            </button>
+            <Tooltip content="Buka sebagai Jendela Melayang (Modal)">
+              <button
+                type="button"
+                onClick={onPopOut}
+                className="text-slate-400 hover:text-cyan-400 p-1 rounded hover:bg-[#252838] transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+              </button>
+            </Tooltip>
           </div>
         )}
 
         {/* TAB 0: TEMPLATE CATALOG & QUICK ADD */}
         {activeTab === 'template' && (
-          <div className="space-y-4 text-xs">
+          <div className="space-y-3.5 text-xs">
             <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                  Katalog Template Scene
-                </h3>
-                <p className="text-[11px] text-slate-400">
-                  Sisipkan template adegan ke video Anda:
-                </p>
-              </div>
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                Katalog Template
+              </h3>
 
               {onOpenAddTemplateModal && (
-                <button
-                  type="button"
-                  onClick={onOpenAddTemplateModal}
-                  className="px-2.5 py-1 rounded-lg bg-cyan-950 border border-cyan-800 text-cyan-400 hover:bg-cyan-900 text-[10px] font-bold transition-colors"
-                >
-                  Buka Modal
-                </button>
+                <Tooltip content="Buka Galeri Modal Lengkap">
+                  <button
+                    type="button"
+                    onClick={onOpenAddTemplateModal}
+                    className="p-1.5 rounded-lg bg-cyan-950/80 border border-cyan-800 text-cyan-400 hover:bg-cyan-900 transition-colors"
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" />
+                  </button>
+                </Tooltip>
               )}
             </div>
 
-            <div className="space-y-2.5">
+            {/* Banner Link to New Dedicated Template Editor Page */}
+            {onOpenTemplateEditor && (
+              <button
+                type="button"
+                onClick={onOpenTemplateEditor}
+                className="w-full p-2.5 rounded-xl bg-gradient-to-r from-purple-950/80 via-[#221c38] to-indigo-950/80 hover:from-purple-900/90 hover:to-indigo-900/90 border border-purple-500/40 text-purple-200 text-xs font-bold flex items-center justify-between transition-all cursor-pointer shadow-md group"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-purple-600/40 border border-purple-400/30 flex items-center justify-center text-purple-300">
+                    <Palette className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="text-left">
+                    <span className="block text-[11px] font-extrabold text-white">
+                      Template Editor (V1)
+                    </span>
+                    <span className="block text-[9px] text-purple-300/80">
+                      Edit & Duplikat Visual
+                    </span>
+                  </div>
+                </div>
+                <Tooltip content="Buka Template Visual Editor di Halaman Penuh">
+                  <span className="text-[9px] px-2 py-0.5 rounded-full bg-purple-900/80 text-purple-300 border border-purple-700/60 font-semibold group-hover:scale-105 transition-transform">
+                    Buka →
+                  </span>
+                </Tooltip>
+              </button>
+            )}
+
+            <div className="space-y-2">
               {SCENE_TEMPLATES_CATALOG.map((tmpl) => (
                 <div
                   key={tmpl.type}
-                  className="p-3 rounded-xl bg-[#1b1c25] border border-[#262939] hover:border-cyan-500/50 transition-all flex flex-col gap-2"
+                  className="px-3 py-2.5 rounded-xl bg-[#1b1c25] border border-[#262939] hover:border-cyan-500/50 transition-all flex items-center justify-between gap-2"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: tmpl.color }} />
-                      <span className="font-bold text-slate-200 text-xs">{tmpl.title}</span>
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: tmpl.color }}
+                    />
+                    <div className="min-w-0">
+                      <div className="font-bold text-slate-200 text-xs truncate">
+                        {tmpl.title}
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[9px] font-bold text-cyan-400 uppercase">
+                          {tmpl.category}
+                        </span>
+                        <span className="text-slate-600">•</span>
+                        <span className="text-[9px] font-mono text-slate-400">
+                          {tmpl.defaultDurationInFrames}f
+                        </span>
+                      </div>
                     </div>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#252838] text-slate-400 font-mono">
-                      {tmpl.defaultDurationInFrames}f
-                    </span>
                   </div>
 
-                  <p className="text-[10px] text-slate-400 leading-tight line-clamp-2">
-                    {tmpl.description}
-                  </p>
-
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-[9px] font-bold text-cyan-400 uppercase">
-                      {tmpl.category}
-                    </span>
+                  <Tooltip content={`Sisipkan ${tmpl.title}: ${tmpl.description}`}>
                     <button
                       type="button"
                       onClick={() => handleQuickAddTemplate(tmpl.type)}
-                      className="px-2.5 py-1 rounded-md bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-[10px] font-bold flex items-center gap-1 shadow-sm active:scale-95 transition-all"
+                      className="p-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-sm active:scale-95 transition-all"
                     >
-                      <Plus className="w-3 h-3" />
-                      <span>Sisipkan</span>
+                      <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                     </button>
-                  </div>
+                  </Tooltip>
                 </div>
               ))}
             </div>
@@ -264,15 +309,14 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
 
         {/* TAB 1: MEDIA & PRESETS */}
         {activeTab === 'media' && (
-          <div className="space-y-4 text-xs">
+          <div className="space-y-3.5 text-xs">
             <div>
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-1 flex items-center justify-between">
-                <span>Preset Templat CapCut</span>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                  Preset Komposisi
+                </h3>
                 <span className="text-[10px] text-cyan-400 font-mono">Remotion v4</span>
-              </h3>
-              <p className="text-[11px] text-slate-400 mb-2.5">
-                Pilih arsitektur komposisi instan untuk video Anda:
-              </p>
+              </div>
 
               <div className="space-y-2">
                 {VIDEO_PRESETS.map((p) => {
@@ -307,21 +351,21 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
 
             <div className="pt-2 border-t border-[#262833]">
               <label className="block font-bold text-slate-300 mb-1">
-                Topik Video / Brief Deskripsi:
+                Topik Video:
               </label>
               <textarea
-                rows={3}
+                rows={2}
                 value={brief.topic}
                 onChange={(e) => onUpdateBrief({ ...brief, topic: e.target.value })}
                 className="w-full bg-[#111217] border border-[#262936] focus:border-cyan-500 rounded-xl p-2.5 text-slate-200 placeholder-slate-500 focus:outline-none transition-colors text-xs resize-none"
-                placeholder="Deskripsikan ide konten video programatik Anda..."
+                placeholder="Deskripsikan ide konten..."
               />
             </div>
 
             <div className="grid grid-cols-2 gap-2.5">
               <div>
                 <label className="block font-bold text-slate-300 mb-1">
-                  Format Video:
+                  Format:
                 </label>
                 <select
                   value={brief.format}
@@ -337,7 +381,7 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
 
               <div>
                 <label className="block font-bold text-slate-300 mb-1">
-                  Frame Rate:
+                  FPS:
                 </label>
                 <select
                   value={brief.fps}
@@ -346,8 +390,8 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
                   }
                   className="w-full bg-[#111217] border border-[#262936] focus:border-cyan-500 rounded-xl p-2 text-slate-200 focus:outline-none text-xs"
                 >
-                  <option value={30}>30 fps (Standar)</option>
-                  <option value={60}>60 fps (Smooth)</option>
+                  <option value={30}>30 fps</option>
+                  <option value={60}>60 fps</option>
                 </select>
               </div>
             </div>
@@ -356,7 +400,7 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
 
         {/* TAB 2: TEKS & TIPOGRAFI */}
         {activeTab === 'text' && (
-          <div className="space-y-4 text-xs">
+          <div className="space-y-3.5 text-xs">
             {/* Sub-tab switcher: Teks Scene vs Teks Global */}
             <div className="flex bg-[#111217] p-1 rounded-xl border border-[#262938]">
               <button
@@ -368,7 +412,7 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Teks Scene Aktif
+                Teks Scene
               </button>
               <button
                 type="button"
@@ -379,7 +423,7 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Teks Brand Global
+                Teks Global
               </button>
             </div>
 
@@ -389,12 +433,12 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
                 {brief.scenes && brief.scenes.length > 0 && (
                   <div>
                     <label className="block text-[10px] text-slate-400 font-bold mb-1">
-                      Pilih Scene yang Diedit:
+                      Pilih Scene:
                     </label>
                     <select
                       value={activeSceneId || brief.scenes[0].id}
                       onChange={(e) => onSelectSceneId && onSelectSceneId(e.target.value)}
-                      className="w-full bg-[#111217] border border-[#2b3042] focus:border-cyan-500 rounded-xl p-2.5 text-slate-100 font-bold text-xs focus:outline-none"
+                      className="w-full bg-[#111217] border border-[#2b3042] focus:border-cyan-500 rounded-xl p-2 text-slate-100 font-bold text-xs focus:outline-none"
                     >
                       {brief.scenes.map((sc, i) => (
                         <option key={sc.id} value={sc.id}>
@@ -429,49 +473,44 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
                 })()}
               </div>
             ) : (
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-2">
-                    Teks & Tipografi Global
-                  </h3>
-                  <p className="text-[11px] text-slate-400 mb-3">
-                    Edit nilai default watermark brand dan tombol Call-To-Action penutup:
-                  </p>
-                </div>
+              <div className="space-y-3">
+                <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-1">
+                  Brand & CTA Global
+                </h3>
 
                 <div>
                   <label className="block font-bold text-slate-300 mb-1">
-                    Nama Brand / Channel:
+                    Nama Brand:
                   </label>
                   <input
                     type="text"
                     value={brief.visualElements.brandName}
                     onChange={(e) => updateVisual('brandName', e.target.value)}
-                    className="w-full bg-[#111217] border border-[#262936] focus:border-cyan-500 rounded-xl p-2.5 text-slate-200 focus:outline-none text-xs"
+                    className="w-full bg-[#111217] border border-[#262936] focus:border-cyan-500 rounded-xl p-2 text-slate-200 focus:outline-none text-xs"
                   />
                 </div>
 
                 <div>
                   <label className="block font-bold text-slate-300 mb-1">
-                    Default Teks Tombol CTA:
+                    Teks Tombol CTA:
                   </label>
                   <input
                     type="text"
                     value={brief.visualElements.ctaText}
                     onChange={(e) => updateVisual('ctaText', e.target.value)}
-                    className="w-full bg-[#111217] border border-[#262936] focus:border-cyan-500 rounded-xl p-2.5 text-slate-200 focus:outline-none text-xs"
+                    className="w-full bg-[#111217] border border-[#262936] focus:border-cyan-500 rounded-xl p-2 text-slate-200 focus:outline-none text-xs"
                   />
                 </div>
 
                 <div>
                   <label className="block font-bold text-slate-300 mb-1">
-                    Default Badge Header:
+                    Badge Header:
                   </label>
                   <input
                     type="text"
                     value={brief.visualElements.badgeText}
                     onChange={(e) => updateVisual('badgeText', e.target.value)}
-                    className="w-full bg-[#111217] border border-[#262936] focus:border-cyan-500 rounded-xl p-2.5 text-slate-200 focus:outline-none text-xs"
+                    className="w-full bg-[#111217] border border-[#262936] focus:border-cyan-500 rounded-xl p-2 text-slate-200 focus:outline-none text-xs"
                   />
                 </div>
               </div>
@@ -481,19 +520,14 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
 
         {/* TAB 3: WARNA & GAYA */}
         {activeTab === 'color' && (
-          <div className="space-y-4 text-xs">
-            <div>
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-2">
-                Palet Warna & Gaya Ambient
-              </h3>
-              <p className="text-[11px] text-slate-400 mb-3">
-                Warna gradient mesh dan glowing orb yang merender secara dinamis:
-              </p>
-            </div>
+          <div className="space-y-3 text-xs">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+              Palet Warna
+            </h3>
 
             <div>
               <label className="block font-bold text-slate-300 mb-1.5">
-                Preset Palet Cepat:
+                Preset Cepat:
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {[
@@ -525,14 +559,14 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
             <div className="space-y-2 pt-2 border-t border-[#262833]">
               <div>
                 <label className="block font-bold text-slate-300 mb-1">
-                  Accent Color:
+                  Accent:
                 </label>
                 <div className="flex items-center gap-2 bg-[#111217] border border-[#262936] rounded-xl p-1.5">
                   <input
                     type="color"
                     value={brief.visualElements.accentColor}
                     onChange={(e) => updateVisual('accentColor', e.target.value)}
-                    className="w-7 h-7 rounded border-none cursor-pointer bg-transparent"
+                    className="w-6 h-6 rounded border-none cursor-pointer bg-transparent"
                   />
                   <span className="font-mono text-xs text-slate-200">
                     {brief.visualElements.accentColor}
@@ -542,14 +576,14 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
 
               <div>
                 <label className="block font-bold text-slate-300 mb-1">
-                  Secondary Color:
+                  Secondary:
                 </label>
                 <div className="flex items-center gap-2 bg-[#111217] border border-[#262936] rounded-xl p-1.5">
                   <input
                     type="color"
                     value={brief.visualElements.secondaryColor}
                     onChange={(e) => updateVisual('secondaryColor', e.target.value)}
-                    className="w-7 h-7 rounded border-none cursor-pointer bg-transparent"
+                    className="w-6 h-6 rounded border-none cursor-pointer bg-transparent"
                   />
                   <span className="font-mono text-xs text-slate-200">
                     {brief.visualElements.secondaryColor}
@@ -559,14 +593,14 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
 
               <div>
                 <label className="block font-bold text-slate-300 mb-1">
-                  Background Color:
+                  Background:
                 </label>
                 <div className="flex items-center gap-2 bg-[#111217] border border-[#262936] rounded-xl p-1.5">
                   <input
                     type="color"
                     value={brief.visualElements.backgroundColor}
                     onChange={(e) => updateVisual('backgroundColor', e.target.value)}
-                    className="w-7 h-7 rounded border-none cursor-pointer bg-transparent"
+                    className="w-6 h-6 rounded border-none cursor-pointer bg-transparent"
                   />
                   <span className="font-mono text-xs text-slate-200">
                     {brief.visualElements.backgroundColor}
@@ -579,20 +613,18 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
 
         {/* TAB 4: ELEMEN & FITUR */}
         {activeTab === 'elements' && (
-          <div className="space-y-4 text-xs">
-            <div>
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-2">
-                Kartu Fitur & Metrik Impak
-              </h3>
-              <p className="text-[11px] text-slate-400 mb-3">
-                Elemen visual yang tampil pada showcase adegan:
-              </p>
-            </div>
+          <div className="space-y-3 text-xs">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+              Fitur & Metrik
+            </h3>
 
             <div>
-              <label className="block font-bold text-slate-300 mb-1.5">
-                Daftar Fitur Showcase ({brief.visualElements.featureList?.length || 0}/4):
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="font-bold text-slate-300">
+                  Poin Fitur ({brief.visualElements.featureList?.length || 0}/4):
+                </label>
+              </div>
+
               <div className="space-y-1.5 mb-2">
                 {brief.visualElements.featureList?.map((feat, idx) => (
                   <div
@@ -603,13 +635,15 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
                       <strong className="text-cyan-400 mr-2">0{idx + 1}.</strong>
                       {feat}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveFeature(idx)}
-                      className="text-slate-500 hover:text-rose-400 p-1"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <Tooltip content="Hapus Fitur">
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFeature(idx)}
+                        className="text-slate-500 hover:text-rose-400 p-1"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </Tooltip>
                   </div>
                 ))}
               </div>
@@ -626,44 +660,45 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
                         handleAddFeature();
                       }
                     }}
-                    placeholder="Tambah poin fitur..."
+                    placeholder="Tambah poin..."
                     className="flex-1 bg-[#111217] border border-[#262936] focus:border-cyan-500 rounded-xl px-2.5 py-1.5 text-slate-200 focus:outline-none text-xs"
                   />
-                  <button
-                    type="button"
-                    onClick={handleAddFeature}
-                    className="px-3 py-1.5 bg-[#252834] hover:bg-[#303444] text-slate-200 rounded-xl transition-colors font-bold flex items-center gap-1"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Tambah</span>
-                  </button>
+                  <Tooltip content="Tambah Poin Fitur">
+                    <button
+                      type="button"
+                      onClick={handleAddFeature}
+                      className="p-2 bg-[#252834] hover:bg-[#303444] text-slate-200 rounded-xl transition-colors font-bold flex items-center justify-center"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </Tooltip>
                 </div>
               )}
             </div>
 
             <div className="pt-2 border-t border-[#262833] space-y-2">
               <label className="block font-bold text-slate-300">
-                Metrik Angka Impak (Counter Spring):
+                Metrik Angka Impak:
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <span className="text-[10px] text-slate-400 block mb-1">Angka / Persen:</span>
+                  <span className="text-[10px] text-slate-400 block mb-1">Nilai:</span>
                   <input
                     type="text"
                     value={brief.visualElements.metricNumber}
                     onChange={(e) => updateVisual('metricNumber', e.target.value)}
                     className="w-full bg-[#111217] border border-[#262936] focus:border-cyan-500 rounded-xl p-2 text-slate-200 font-mono text-xs focus:outline-none"
-                    placeholder="10x, 95%, $10M"
+                    placeholder="10x, 95%"
                   />
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 block mb-1">Label Metrik:</span>
+                  <span className="text-[10px] text-slate-400 block mb-1">Label:</span>
                   <input
                     type="text"
                     value={brief.visualElements.metricLabel}
                     onChange={(e) => updateVisual('metricLabel', e.target.value)}
                     className="w-full bg-[#111217] border border-[#262936] focus:border-cyan-500 rounded-xl p-2 text-slate-200 text-xs focus:outline-none"
-                    placeholder="Efisiensi Render"
+                    placeholder="Efisiensi"
                   />
                 </div>
               </div>
@@ -673,15 +708,10 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
 
         {/* TAB 5: ANIMASI SPRING */}
         {activeTab === 'animation' && (
-          <div className="space-y-4 text-xs">
-            <div>
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-2">
-                Fisika Animasi Remotion
-              </h3>
-              <p className="text-[11px] text-slate-400 mb-3">
-                Remotion menghitung setiap frame secara matematis melalui hook <code className="text-cyan-400">spring()</code>:
-              </p>
-            </div>
+          <div className="space-y-3.5 text-xs">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+              Fisika Animasi Spring
+            </h3>
 
             <div className="bg-[#111217] border border-[#262936] rounded-xl p-3 flex flex-col gap-2">
               <div className="flex items-center justify-between text-[11px] text-slate-300">
@@ -707,23 +737,42 @@ export const CapCutSidebar: React.FC<CapCutSidebarProps> = ({
               </div>
 
               <div className="text-[10px] text-slate-400 font-mono flex justify-between pt-1">
-                <span>Start: 0.0 (frame 0)</span>
-                <span>Peak: ~1.10 (overshoot)</span>
+                <span>Start: 0.0</span>
+                <span>Peak: ~1.10</span>
                 <span>Settle: 1.0</span>
               </div>
             </div>
 
-            <div className="bg-[#111217] border border-[#262936] rounded-xl p-3 space-y-2">
-              <div className="text-[11px] font-bold text-slate-200">
-                Parameter Remotion Spring Resmi:
+            <div className="bg-[#111217] border border-[#262936] rounded-xl p-3 space-y-1.5">
+              <div className="text-[11px] font-bold text-slate-200 mb-1">
+                Konfigurasi Spring Remotion:
               </div>
-              <ul className="text-[11px] text-slate-400 space-y-1.5 list-disc pl-4">
-                <li><strong className="text-slate-200">fps:</strong> Diambil otomatis dari <code className="text-cyan-400 font-mono">useVideoConfig()</code></li>
-                <li><strong className="text-slate-200">damping:</strong> 12 (mencegah osilasi berlebih)</li>
-                <li><strong className="text-slate-200">stiffness:</strong> 120 (kecepatan respon pegas)</li>
-                <li><strong className="text-slate-200">mass:</strong> 0.6 (bobot inersia kinetik)</li>
-              </ul>
+              <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
+                <div className="bg-[#171922] p-1.5 rounded border border-[#272a39] text-slate-300">
+                  damping: <span className="text-cyan-400 font-bold">12</span>
+                </div>
+                <div className="bg-[#171922] p-1.5 rounded border border-[#272a39] text-slate-300">
+                  stiffness: <span className="text-cyan-400 font-bold">120</span>
+                </div>
+                <div className="bg-[#171922] p-1.5 rounded border border-[#272a39] text-slate-300">
+                  mass: <span className="text-cyan-400 font-bold">0.6</span>
+                </div>
+                <div className="bg-[#171922] p-1.5 rounded border border-[#272a39] text-slate-300">
+                  overshootClamping: <span className="text-slate-400 font-bold">false</span>
+                </div>
+              </div>
             </div>
+
+            {onOpenTransitionsGallery && (
+              <button
+                type="button"
+                onClick={onOpenTransitionsGallery}
+                className="w-full py-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-slate-950 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-cyan-500/20 active:scale-95 transition-all"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Buka Galeri Transisi</span>
+              </button>
+            )}
           </div>
         )}
       </div>

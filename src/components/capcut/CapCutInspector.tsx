@@ -17,6 +17,7 @@ import {
 import type { VideoBrief, GeneratedCodeBundle, VideoScene } from '../../types/remotion';
 import { calculateSequenceBlocks, getTotalFrames, getResolutionForFormat } from '../../utils/remotionMath';
 import { SceneCustomizer } from './SceneCustomizer';
+import { Tooltip } from '../common/Tooltip';
 
 interface CapCutInspectorProps {
   brief: VideoBrief;
@@ -28,6 +29,7 @@ interface CapCutInspectorProps {
   onUpdateScene?: (updatedScene: VideoScene) => void;
   onPopOut?: () => void;
   isFloating?: boolean;
+  onOpenTransitionsGallery?: () => void;
 }
 
 type TabType = 'properties' | 'code';
@@ -43,6 +45,7 @@ export const CapCutInspector: React.FC<CapCutInspectorProps> = ({
   onUpdateScene,
   onPopOut,
   isFloating = false,
+  onOpenTransitionsGallery,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('properties');
   const [activeCodeTab, setActiveCodeTab] = useState<CodeTabKey>('composition');
@@ -110,52 +113,61 @@ export const CapCutInspector: React.FC<CapCutInspectorProps> = ({
       {/* Inspector Top Tabs Header */}
       <div className="h-10 bg-[#14151b] border-b border-[#23252d] px-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setActiveTab('properties')}
-            className={`px-3 py-1 rounded text-xs font-semibold transition-all ${
-              activeTab === 'properties'
-                ? 'bg-[#252834] text-cyan-400'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Kustomisasi Scene
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('code')}
-            className={`px-3 py-1 rounded text-xs font-semibold transition-all ${
-              activeTab === 'code'
-                ? 'bg-[#252834] text-cyan-400'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Kode Remotion
-          </button>
+          <Tooltip content="Kustomisasi Scene & Properti">
+            <button
+              type="button"
+              onClick={() => setActiveTab('properties')}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold transition-all ${
+                activeTab === 'properties'
+                  ? 'bg-[#252834] text-cyan-400'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Sliders className="w-3.5 h-3.5" />
+              <span>Kustomisasi</span>
+            </button>
+          </Tooltip>
+
+          <Tooltip content="Lihat Sumber Kode Remotion">
+            <button
+              type="button"
+              onClick={() => setActiveTab('code')}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold transition-all ${
+                activeTab === 'code'
+                  ? 'bg-[#252834] text-cyan-400'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Code2 className="w-3.5 h-3.5" />
+              <span>Kode</span>
+            </button>
+          </Tooltip>
         </div>
 
         <div className="flex items-center gap-1">
           {/* Pop out to floating modal toggle */}
           {onPopOut && !isFloating && (
-            <button
-              type="button"
-              onClick={onPopOut}
-              className="text-slate-400 hover:text-cyan-400 p-1 rounded hover:bg-[#252838] transition-colors"
-              title="Buka sebagai Jendela Melayang / Modal (Undock)"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-            </button>
+            <Tooltip content="Buka sebagai Jendela Melayang">
+              <button
+                type="button"
+                onClick={onPopOut}
+                className="text-slate-400 hover:text-cyan-400 p-1 rounded hover:bg-[#252838] transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+              </button>
+            </Tooltip>
           )}
 
           {!isFloating && (
-            <button
-              type="button"
-              onClick={onClose}
-              className="text-slate-500 hover:text-white p-1 text-xs"
-              title="Tutup Inspector"
-            >
-              ✕
-            </button>
+            <Tooltip content="Tutup Panel Inspector">
+              <button
+                type="button"
+                onClick={onClose}
+                className="text-slate-500 hover:text-white p-1 text-xs"
+              >
+                ✕
+              </button>
+            </Tooltip>
           )}
         </div>
       </div>
@@ -169,6 +181,7 @@ export const CapCutInspector: React.FC<CapCutInspectorProps> = ({
               onUpdateScene={onUpdateScene}
               sceneIndex={activeSceneIndex}
               totalScenes={brief.scenes?.length}
+              onOpenTransitionsGallery={onOpenTransitionsGallery}
             />
           ) : (
             <div className="text-center p-6 text-slate-500">
@@ -198,11 +211,22 @@ export const CapCutInspector: React.FC<CapCutInspectorProps> = ({
                   [{activeSequence?.startFrame || 0} .. {(activeSequence?.startFrame || 0) + (activeSequence?.durationInFrames || 90)}]
                 </span>
               </div>
-              <div className="bg-[#161820] p-2 rounded-lg border border-[#242735]">
-                <span className="text-slate-400 block text-[10px]">Transisi Keluar:</span>
-                <span className="font-mono font-bold text-emerald-400 uppercase">
-                  {activeScene?.transitionNext?.type || 'Fade'} ({activeScene?.transitionNext?.durationInFrames || 15}f)
-                </span>
+              <div className="bg-[#161820] p-2 rounded-lg border border-[#242735] col-span-2 flex items-center justify-between">
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Transisi Keluar:</span>
+                  <span className="font-mono font-bold text-emerald-400 uppercase">
+                    {activeScene?.transitionNext?.type || 'Fade'} ({activeScene?.transitionNext?.durationInFrames || 15}f)
+                  </span>
+                </div>
+                {onOpenTransitionsGallery && (
+                  <button
+                    type="button"
+                    onClick={onOpenTransitionsGallery}
+                    className="px-2.5 py-1 rounded-md bg-[#252a3a] hover:bg-cyan-500 hover:text-slate-950 text-cyan-300 font-semibold text-[10px] transition-all"
+                  >
+                    Buka Galeri
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -256,22 +280,26 @@ export const CapCutInspector: React.FC<CapCutInspectorProps> = ({
               {currentCodeObj.filename}
             </span>
             <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={handleCopy}
-                className="flex items-center gap-1 px-2.5 py-1 rounded bg-[#232733] hover:bg-[#2e3344] text-slate-200 text-[11px] font-semibold transition-colors"
-              >
-                {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-slate-400" />}
-                <span>{copied ? 'Tersalin' : 'Salin'}</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleDownloadFile}
-                className="flex items-center gap-1 px-2 py-1 rounded bg-[#232733] hover:bg-[#2e3344] text-slate-200 text-[11px] font-semibold transition-colors"
-                title="Unduh File"
-              >
-                <Download className="w-3 h-3" />
-              </button>
+              <Tooltip content={copied ? 'Kode Tersalin!' : 'Salin Kode ke Clipboard'}>
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded bg-[#232733] hover:bg-[#2e3344] text-slate-200 text-[11px] font-semibold transition-colors"
+                >
+                  {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-slate-400" />}
+                  <span>{copied ? 'Tersalin' : 'Salin'}</span>
+                </button>
+              </Tooltip>
+
+              <Tooltip content="Unduh File Kode">
+                <button
+                  type="button"
+                  onClick={handleDownloadFile}
+                  className="p-1 rounded bg-[#232733] hover:bg-[#2e3344] text-slate-200 transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                </button>
+              </Tooltip>
             </div>
           </div>
 

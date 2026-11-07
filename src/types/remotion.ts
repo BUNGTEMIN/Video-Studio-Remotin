@@ -20,12 +20,46 @@ export interface SceneTransition {
 export type SceneTemplateType =
   | 'hook-title'
   | 'feature-grid'
+  | 'image-gallery'
   | 'metric-impact'
   | 'split-comparison'
   | 'quote-testimonial'
   | 'product-showcase'
   | 'cyber-glitch'
+  | 'diary-paper'
   | 'outro-cta';
+
+export interface DiaryProjectPayload {
+  title: string;
+  date_text?: string;
+  bg_scene?: string;
+  paper_style?: string;
+  font_name?: string;
+  font_size?: number;
+  ink_color?: string;
+  audio_file?: string;
+  pause_duration?: number;
+  overlays?: {
+    stamp?: string;
+    tape?: string;
+    photo?: string;
+    filter?: string;
+  };
+  pages: {
+    quote: string;
+    sign?: string;
+    duration?: number;
+    pause_duration?: number;
+  }[];
+}
+
+export interface GalleryImageItem {
+  id: string;
+  url: string;
+  title: string;
+  subtitle?: string;
+  tag?: string;
+}
 
 export interface VideoScene {
   id: string;
@@ -34,7 +68,11 @@ export interface VideoScene {
   durationInFrames: number;
   transitionNext?: SceneTransition;
   
-  // Dynamic scene content
+  // Layer visibility toggles (Decoupled overlay system)
+  hideText?: boolean;
+  hideBadge?: boolean;
+
+  // Dynamic scene content & V1 Visual Engine Parameters
   title?: string;
   subtitle?: string;
   badgeText?: string;
@@ -49,6 +87,27 @@ export interface VideoScene {
   authorRole?: string;
   beforeText?: string;
   afterText?: string;
+
+  // Specific to image-gallery template
+  imageUrl?: string;
+  galleryImages?: GalleryImageItem[];
+  layoutVariant?: 'carousel' | 'stack' | 'polaroid';
+}
+
+export interface CustomTemplate {
+  id: string;
+  name: string;
+  templateType: SceneTemplateType;
+  category: 'Intro' | 'Galeri' | 'Fitur' | 'Data' | 'Komparasi' | 'Outro';
+  description: string;
+  badge: string;
+  defaultDurationInFrames: number;
+  iconName: string;
+  accentColor: string;
+  secondaryColor: string;
+  previewGradient: string;
+  isCustom?: boolean;
+  content: Partial<VideoScene>;
 }
 
 export interface VisualElementsConfig {
@@ -67,6 +126,23 @@ export interface VisualElementsConfig {
   backgroundStyle: 'gradient-mesh' | 'dark-cyber' | 'clean-minimal' | 'aurora';
 }
 
+export interface AudioTrackConfig {
+  id: string;
+  name: string;
+  bpm: number;
+  genre: string;
+  volume: number; // 0 - 100
+  isMuted: boolean;
+  sfxTransitions: boolean;
+}
+
+export interface TrackVisibilityConfig {
+  video: boolean;
+  text: boolean;
+  graphics: boolean;
+  audio: boolean;
+}
+
 export interface VideoBrief {
   id: string;
   topic: string;
@@ -75,6 +151,8 @@ export interface VideoBrief {
   fps: number;
   visualElements: VisualElementsConfig;
   scenes: VideoScene[];
+  audioConfig?: AudioTrackConfig;
+  trackVisibility?: TrackVisibilityConfig;
 }
 
 export interface SequenceBlock {
@@ -86,6 +164,8 @@ export interface SequenceBlock {
   description: string;
   templateType: SceneTemplateType;
   transitionNext?: SceneTransition;
+  hideText?: boolean;
+  hideBadge?: boolean;
 }
 
 export interface GeneratedCodeBundle {
@@ -94,3 +174,4 @@ export interface GeneratedCodeBundle {
   schemaCode: string;
   instructionsMd: string;
 }
+

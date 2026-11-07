@@ -56,6 +56,8 @@ export function calculateSceneBlocks(scenes: VideoScene[]): SequenceBlock[] {
       description: scene.subtitle || scene.title || scene.name,
       templateType: scene.templateType,
       transitionNext: scene.transitionNext,
+      hideText: scene.hideText,
+      hideBadge: scene.hideBadge,
     };
   });
 }

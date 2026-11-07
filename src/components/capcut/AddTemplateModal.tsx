@@ -71,20 +71,20 @@ export const AddTemplateModal: React.FC<AddTemplateModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in select-none">
-      <div className="bg-[#14161f] border border-[#2b2f3e] rounded-2xl max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in select-none">
+      <div className="bg-[#14161f] border border-[#2b2f3e] rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#242735] flex items-center justify-between shrink-0 bg-[#171923]">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-[#242735] flex items-center justify-between shrink-0 bg-[#171923]">
           <div>
             <div className="flex items-center gap-2">
               <div className="p-1.5 rounded-lg bg-cyan-950 border border-cyan-800 text-cyan-400">
                 <Plus className="w-4 h-4" />
               </div>
-              <h3 className="text-base font-bold text-white">
+              <h3 className="text-sm sm:text-base font-bold text-white">
                 Katalog Template & Tambah Scene
               </h3>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
               Pilih template visual adegan untuk disisipkan ke timeline Remotion Anda
             </p>
           </div>
@@ -98,13 +98,13 @@ export const AddTemplateModal: React.FC<AddTemplateModalProps> = ({
         </div>
 
         {/* Category Filter Tabs */}
-        <div className="px-6 py-3 border-b border-[#212431] flex items-center gap-2 overflow-x-auto shrink-0 bg-[#12131b]">
+        <div className="px-3.5 sm:px-6 py-2.5 sm:py-3 border-b border-[#212431] flex items-center gap-2 overflow-x-auto shrink-0 bg-[#12131b] scrollbar-none">
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               type="button"
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                 selectedCategory === cat
                   ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 shadow-md font-bold'
                   : 'bg-[#1b1d28] text-slate-400 hover:text-white hover:bg-[#252837]'
@@ -116,7 +116,7 @@ export const AddTemplateModal: React.FC<AddTemplateModalProps> = ({
         </div>
 
         {/* Templates Grid */}
-        <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex-1 overflow-y-auto p-3.5 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {filteredTemplates.map((template) => {
             const isJustAdded = addedTemplateType === template.type;
 

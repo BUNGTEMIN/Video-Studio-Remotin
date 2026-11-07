@@ -88,6 +88,7 @@ export const sceneSchema = z.object({
   templateType: z.enum([
     'hook-title',
     'feature-grid',
+    'image-gallery',
     'metric-impact',
     'split-comparison',
     'quote-testimonial',
